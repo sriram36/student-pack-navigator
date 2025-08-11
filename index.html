@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Developer Pack Navigator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+        }
+        .card {
+            transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+        #search-input::placeholder {
+            color: #94a3b8; /* slate-400 */
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app" class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+        <!-- Header Section -->
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-slate-800">Student Developer Pack Navigator</h1>
+            <p class="mt-2 text-lg text-slate-500">Your interactive guide to the best student discounts and freebies.</p>
+        </header>
+
+        <!-- Filters Section -->
+        <div class="sticky top-0 bg-slate-50/80 backdrop-blur-sm z-10 py-4 mb-8 rounded-lg">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <!-- Search Input -->
+                <div class="relative sm:col-span-1">
+                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                        <i class="fas fa-search text-slate-400"></i>
+                    </div>
+                    <input type="text" id="search-input" placeholder="Search for a tool..." class="block w-full rounded-md border-0 py-2.5 pl-10 text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 bg-white">
+                </div>
+                <!-- Category Filter -->
+                <div>
+                    <select id="category-filter" class="block w-full rounded-md border-0 py-2.5 pl-3 pr-10 text-slate-900 ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 bg-white">
+                        <option>All Categories</option>
+                    </select>
+                </div>
+                <!-- Access Filter -->
+                <div>
+                    <select id="access-filter" class="block w-full rounded-md border-0 py-2.5 pl-3 pr-10 text-slate-900 ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 bg-white">
+                        <option>All Access Methods</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Grid -->
+        <main id="results-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Cards will be injected here by JS -->
+        </main>
+        
+        <p id="no-results" class="text-center text-slate-500 text-lg mt-8 hidden">No tools found matching your criteria.</p>
+
+    </div>
+
+    <script>
+        // --- DATA SOURCE (from your provided report) ---
+        const offers = [
+            { name: 'GitHub Copilot Pro', category: 'AI/Development', offer: 'FREE', access: 'Student verification via GitHub', url: 'https://education.github.com/pack' },
+            { name: 'GitHub Pro', category: 'Development', offer: 'FREE', access: 'Student verification', url: 'https://education.github.com/pack' },
+            { name: 'JetBrains All Products', category: 'Development', offer: 'FREE', access: 'Student verification with .edu email', url: 'https://www.jetbrains.com/community/education/' },
+            { name: 'Adobe Creative Cloud', category: 'Design', offer: '65% OFF', access: 'Student verification via SheerID', url: 'https://www.adobe.com/creativecloud/buy/students.html' },
+            { name: 'Notion AI', category: 'Productivity', offer: 'FREE', access: 'Student verification', url: 'https://www.notion.so/product/ai' },
+            { name: 'Figma Professional', category: 'Design', offer: 'FREE', access: 'Education domain email verification', url: 'https://www.figma.com/education/' },
+            { name: 'Google One AI Premium', category: 'AI Tools', offer: 'FREE', access: 'US college students with .edu email', url: 'https://one.google.com/' },
+            { name: 'Perplexity Pro', category: 'AI Search', offer: 'Up to 24 months FREE', access: 'Student verification via SheerID', url: 'https://www.perplexity.ai/' },
+            { name: 'Microsoft Azure', category: 'Cloud', offer: '$100 credits', access: '18+ student with school email', url: 'https://azure.microsoft.com/en-us/pricing/offers/ms-azr-0170p/' },
+            { name: 'AWS Educate', category: 'Cloud', offer: 'FREE credits & training', access: 'Student verification', url: 'https://aws.amazon.com/education/awseducate/' },
+            { name: 'Spotify Premium', category: 'Entertainment', offer: '50% OFF', access: '18+ enrolled student, annual verification', url: 'https://www.spotify.com/student/' },
+            { name: 'Canva Pro', category: 'Design', offer: 'FREE', access: 'K-12 free, university via campus programs', url: 'https://www.canva.com/education/' },
+            { name: 'DigitalOcean', category: 'Cloud', offer: 'FREE credits', access: 'GitHub Student Pack verification', url: 'https://education.github.com/pack' },
+            { name: 'Namecheap', category: 'Web Services', offer: 'FREE domain & hosting', access: 'GitHub Student Pack verification', url: 'https://education.github.com/pack' },
+            { name: 'Slack Standard', category: 'Communication', offer: 'FREE', access: 'Student team verification', url: 'https://slack.com/pricing' },
+            { name: 'Discord Nitro', category: 'Communication', offer: 'Occasional FREE', access: 'Via partnerships (GitHub Pack)', url: 'https://discord.com/nitro' },
+            { name: 'Miro Team', category: 'Collaboration', offer: 'FREE', access: 'Student verification', url: 'https://miro.com/education/' },
+            { name: 'Lucidchart', category: 'Diagramming', offer: 'FREE Education', access: 'Education email verification', url: 'https://www.lucidchart.com/pages/usecase/education' },
+            { name: 'DataCamp Premium', category: 'Learning', offer: '50% OFF', access: 'Student verification', url: 'https://www.datacamp.com/pricing' },
+            { name: 'Airtable Pro', category: 'Database', offer: '50% OFF', access: 'Student verification', url: 'https://airtable.com/pricing' },
+            { name: 'Repl.it Hacker', category: 'Development', offer: 'FREE', access: 'GitHub Student Pack verification', url: 'https://education.github.com/pack' },
+            { name: 'Julius AI', category: 'AI Tools', offer: '50% OFF', access: 'Academic verification', url: 'https://julius.ai/' },
+            { name: 'Humata', category: 'AI Tools', offer: '$1.99/month', access: 'Student verification', url: 'https://www.humata.ai/' },
+            { name: 'Otter.ai', category: 'Productivity', offer: '$8.33/month + 300 free min', access: 'Student verification', url: 'https://otter.ai/pricing' },
+            { name: 'Grammarly Premium', category: 'Writing', offer: 'Occasional discounts', access: 'Institutional partnerships', url: 'https://www.grammarly.com/edu' },
+            { name: 'Apple Developer Program', category: 'Development', offer: 'Fee waiver possible', access: 'Educational institution membership', url: 'https://developer.apple.com/' },
+            { name: 'Xcode', category: 'Development', offer: 'FREE', access: 'Apple ID', url: 'https://developer.apple.com/xcode/' },
+            { name: 'Swift Playgrounds', category: 'Learning', offer: 'FREE', access: 'Apple ID', url: 'https://developer.apple.com/swift-playgrounds/' },
+            { name: 'Vertex AI', category: 'AI/ML', offer: '$300 free credits', access: 'Google Cloud account', url: 'https://cloud.google.com/vertex-ai' },
+            { name: 'Google Cloud Skills Boost', category: 'Learning', offer: '200 free credits', access: 'Student verification', url: 'https://cloud.google.com/edu/students' },
+            { name: 'Appwrite Education', category: 'Backend', offer: 'FREE Pro features', access: 'GitHub Student Pack verification', url: 'https://education.github.com/pack' },
+            { name: 'Scrimba Pro', category: 'Learning', offer: 'FREE month', access: 'GitHub Student Pack verification', url: 'https://education.github.com/pack' },
+            { name: 'GitLens Pro', category: 'Development', offer: 'FREE', access: 'GitHub Student Pack verification', url: 'https://education.github.com/pack' },
+            { name: 'Typeform', category: 'Forms', offer: 'Student discounts', access: 'Student verification', url: 'https://www.typeform.com/help/student-discount/' },
+            { name: 'Mailchimp', category: 'Marketing', offer: 'Student discounts', access: 'Student verification', url: 'https://mailchimp.com/pricing/' },
+            { name: 'Heroku', category: 'Cloud', offer: 'FREE tier', access: 'Account creation', url: 'https://www.heroku.com/pricing' },
+            { name: 'MongoDB Atlas', category: 'Database', offer: 'FREE tier + credits', access: 'Student verification', url: 'https://www.mongodb.com/students' },
+            { name: 'Cloudflare', category: 'Web Services', offer: 'FREE tier', access: 'Account creation', url: 'https://www.cloudflare.com/plans/' },
+            { name: 'Zoom Pro', category: 'Communication', offer: 'FREE', access: 'Educational institution', url: 'https://zoom.us/pricing/education' },
+            { name: 'Microsoft Office 365', category: 'Productivity', offer: 'FREE', access: 'Student email verification', url: 'https://www.microsoft.com/en-us/education/products/office' },
+            { name: 'Autodesk', category: 'Design', offer: 'FREE', access: 'Student verification', url: 'https://www.autodesk.com/education/edu-software' },
+            { name: 'Unity Pro', category: 'Game Development', offer: 'FREE', access: 'Student verification', url: 'https://unity.com/products/unity-student' },
+            { name: 'Unreal Engine', category: 'Game Development', offer: 'FREE', access: 'Account creation', url: 'https://www.unrealengine.com/' },
+            { name: 'Blender', category: '3D Design', offer: 'FREE', access: 'No verification needed', url: 'https://www.blender.org/' },
+            { name: 'InVision', category: 'Design', offer: 'FREE', access: 'Student verification', url: 'https://www.invisionapp.com/education-signup' },
+            { name: 'Sketch', category: 'Design', offer: '50% OFF', access: 'Student verification', url: 'https://www.sketch.com/store/edu/' },
+            { name: 'Framer', category: 'Design', offer: 'FREE', access: 'Student verification', url: 'https://www.framer.com/pricing/' },
+            { name: 'PaperTrail', category: 'Development', offer: 'FREE tier', access: 'GitHub Student Pack', url: 'https://education.github.com/pack' },
+            { name: 'SendGrid', category: 'Email', offer: 'FREE credits', access: 'GitHub Student Pack', url: 'https://education.github.com/pack' },
+            { name: 'Amazon Prime (Prime Student)', category: 'Professional', offer: 'FREE (6 months)', access: 'Amazon Prime Student membership + .edu email', url: 'https://www.amazon.com/amazonprime' },
+            { name: 'LinkedIn Premium Trial', category: 'Professional', offer: 'FREE (1 month)', access: 'Any LinkedIn account (once per year)', url: 'https://www.linkedin.com/premium/' },
+            { name: 'LinkedIn Learning', category: 'Learning', offer: 'FREE (via university)', access: 'University partnership or employer access', url: 'Contact your university career services' },
+        ];
+
+        // --- DOM ELEMENTS ---
+        const grid = document.getElementById('results-grid');
+        const searchInput = document.getElementById('search-input');
+        const categoryFilter = document.getElementById('category-filter');
+        const accessFilter = document.getElementById('access-filter');
+        const noResults = document.getElementById('no-results');
+
+        // --- FUNCTIONS ---
+
+        function getIconForCategory(category) {
+            const iconMap = { 'Development': 'fas fa-code', 'AI/Development': 'fas fa-robot', 'Design': 'fas fa-palette', 'Productivity': 'fas fa-tasks', 'AI Tools': 'fas fa-brain', 'AI Search': 'fas fa-search-plus', 'Cloud': 'fas fa-cloud', 'Entertainment': 'fas fa-music', 'Web Services': 'fas fa-globe', 'Communication': 'fas fa-comments', 'Collaboration': 'fas fa-users', 'Diagramming': 'fas fa-project-diagram', 'Learning': 'fas fa-graduation-cap', 'Database': 'fas fa-database', 'Forms': 'fas fa-file-alt', 'Marketing': 'fas fa-bullhorn', 'Email': 'fas fa-envelope', 'Game Development': 'fas fa-gamepad', '3D Design': 'fas fa-cube', 'Professional': 'fas fa-briefcase', 'AI/ML': 'fas fa-cogs', 'Backend': 'fas fa-server', 'Writing': 'fas fa-pencil-alt', };
+            return iconMap[category] || 'fas fa-star';
+        }
+
+        function renderCards(filteredOffers) {
+            grid.innerHTML = '';
+            noResults.classList.toggle('hidden', filteredOffers.length > 0);
+
+            filteredOffers.forEach(offer => {
+                const isFree = offer.offer.toUpperCase().includes('FREE');
+                const offerColor = isFree ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800';
+                const iconClass = getIconForCategory(offer.category);
+
+                const card = document.createElement('a');
+                card.href = offer.url;
+                card.target = '_blank';
+                card.rel = 'noopener noreferrer';
+                card.className = 'card bg-white rounded-lg shadow-md p-6 flex flex-col hover:shadow-xl';
+                card.innerHTML = `
+                    <div class="flex-grow">
+                        <div class="flex justify-between items-start">
+                            <h2 class="text-xl font-bold text-slate-800">${offer.name}</h2>
+                            <span class="text-2xl text-slate-400"><i class="${iconClass}"></i></span>
+                        </div>
+                        <p class="text-sm text-slate-500 mt-1">${offer.category}</p>
+                        <div class="mt-4">
+                            <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${offerColor} ring-1 ring-inset ring-green-600/20">${offer.offer}</span>
+                        </div>
+                        <p class="text-sm text-slate-600 mt-4"><strong>Access:</strong> ${offer.access}</p>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-slate-200">
+                        <p class="text-sm text-indigo-600 font-semibold hover:text-indigo-500">
+                            Get Offer <span aria-hidden="true">→</span>
+                        </p>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function populateFilters() {
+            const categories = [...new Set(offers.map(o => o.category))].sort();
+            const accessMethods = [...new Set(offers.map(o => o.access))].sort();
+
+            categories.forEach(c => {
+                const option = document.createElement('option');
+                option.value = c;
+                option.textContent = c;
+                categoryFilter.appendChild(option);
+            });
+
+            accessMethods.forEach(a => {
+                const option = document.createElement('option');
+                option.value = a;
+                option.textContent = a;
+                accessFilter.appendChild(option);
+            });
+        }
+        
+        function applyFilters() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const selectedCategory = categoryFilter.value;
+            const selectedAccess = accessFilter.value;
+
+            const filtered = offers.filter(offer => {
+                const nameMatch = offer.name.toLowerCase().includes(searchTerm);
+                const categoryMatch = selectedCategory === 'All Categories' || offer.category === selectedCategory;
+                const accessMatch = selectedAccess === 'All Access Methods' || offer.access === selectedAccess;
+                return nameMatch && categoryMatch && accessMatch;
+            });
+
+            renderCards(filtered);
+        }
+
+        // --- INITIALIZATION ---
+        populateFilters();
+        renderCards(offers);
+
+        // --- EVENT LISTENERS ---
+        searchInput.addEventListener('input', applyFilters);
+        categoryFilter.addEventListener('change', applyFilters);
+        accessFilter.addEventListener('change', applyFilters);
+
+    </script>
+</body>
+</html>
